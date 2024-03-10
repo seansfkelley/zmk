@@ -285,7 +285,7 @@ const uint8_t underglow_bat_rhs[] = DT_PROP(UNDERGLOW_INDICATORS, bat_rhs);
 const struct led_rgb red = HEXRGB(0xff, 0x00, 0x00);
 const struct led_rgb yellow = HEXRGB(0xff, 0xff, 0x00);
 const struct led_rgb green = HEXRGB(0x00, 0xff, 0x00);
-const struct led_rgb dull_green = HEXRGB(0x00, 0xff, 0x68);
+const struct led_rgb dull_green = HEXRGB(0x00, 0x80, 0x00);
 const struct led_rgb magenta = HEXRGB(0xff, 0x00, 0xff);
 const struct led_rgb white = HEXRGB(0xff, 0xff, 0xff);
 const struct led_rgb lilac = HEXRGB(0x6b, 0x1f, 0xce);
@@ -372,26 +372,26 @@ static int zmk_led_generate_status(void) {
         int ble_pixel = underglow_ble_state[i];
         if (status == 2 && active_endpoint.transport == ZMK_TRANSPORT_BLE &&
             active_ble_profile_index == i) { // connected AND active
-            status_pixels[ble_pixel] = white;
+            status_pixels[ble_pixel] = green;
         } else if (status == 2) { // connected
             status_pixels[ble_pixel] = dull_green;
         } else if (status == 1) { // paired
             status_pixels[ble_pixel] = red;
         } else if (status == 0) { // unused
-            status_pixels[ble_pixel] = lilac;
+            status_pixels[ble_pixel] = white;
         }
     }
 
     enum zmk_usb_conn_state usb_state = zmk_usb_get_conn_state();
     if (usb_state == ZMK_USB_CONN_HID &&
         active_endpoint.transport == ZMK_TRANSPORT_USB) { // connected AND active
-        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = white;
+        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = green;
     } else if (usb_state == ZMK_USB_CONN_HID) { // connected
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = dull_green;
     } else if (usb_state == ZMK_USB_CONN_POWERED) { // powered
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = red;
     } else if (usb_state == ZMK_USB_CONN_NONE) { // disconnected
-        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = lilac;
+        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = white;
     }
 
     int16_t blend = 256;
