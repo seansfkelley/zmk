@@ -53,12 +53,7 @@
 
     underglow_indicators: underglow-indicators {
         compatible  = "zmk,underglow-indicators";
-        layer-state = <>;
-        bat-lhs     = <36 30 24 18 12 7>;
-        bat-rhs     = <37 31 25 19 13 8>;
-        capslock    = <0>;
-        numlock     = <1>;
-        scrolllock  = <2>;
+        bat-self     = <36 30 24 18 12 7>;
         ble-state   = <34 28 22 16>;
         usb-state   = <10>;
         output-fallback = <11>;
