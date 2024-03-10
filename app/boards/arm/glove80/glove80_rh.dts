@@ -17,6 +17,7 @@
         zmk,underglow = &led_strip;
         zmk,backlight = &back_led_backlight;
         zmk,battery   = &vbatt;
+        zmk,underglow-indicators = &underglow_indicators;
     };
 
     back_led_backlight: pwmleds {
@@ -50,6 +51,11 @@
             , <5 0 &gpio0 22 0>     /* EXT5 */
             , <6 0 &gpio1 00 0>     /* EXT6 */
             ;
+    };
+
+    underglow_indicators: underglow-indicators {
+        compatible  = "zmk,underglow-indicators";
+        bat-self     = <36 30 24 18 12 7>;
     };
 };
 
