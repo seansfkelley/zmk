@@ -22,6 +22,9 @@ int zmk_keymap_layer_activate(uint8_t layer);
 int zmk_keymap_layer_deactivate(uint8_t layer);
 int zmk_keymap_layer_toggle(uint8_t layer);
 int zmk_keymap_layer_to(uint8_t layer);
+int zmk_keymap_trigger_callbacks(struct zmk_behavior_binding *binding,
+                                 struct zmk_behavior_binding_event event, uint8_t source,
+                                 bool pressed);
 const char *zmk_keymap_layer_name(uint8_t layer);
 
 int zmk_keymap_position_state_changed(uint8_t source, uint32_t position, bool pressed,
