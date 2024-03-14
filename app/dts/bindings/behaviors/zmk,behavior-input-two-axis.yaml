@@ -23,3 +23,6 @@ properties:
   acceleration-exponent:
     type: int
     default: 1
+  base-multiplier:
+    type: int
+    default: 1

@@ -31,6 +31,8 @@ struct movement_state_1d {
 struct movement_state_2d {
     struct movement_state_1d x;
     struct movement_state_1d y;
+    int16_t multiplier;
+    int16_t divisor;
 };
 
 struct behavior_input_two_axis_data {
@@ -50,6 +52,7 @@ struct behavior_input_two_axis_config {
     // acceleration exponent 1: uniform acceleration
     // acceleration exponent 2: uniform jerk
     uint8_t acceleration_exponent;
+    uint8_t base_multiplier;
 };
 
 #if CONFIG_MINIMAL_LIBC
@@ -120,9 +123,17 @@ static struct vector2d update_movement_2d(const struct behavior_input_two_axis_c
                                           struct movement_state_2d *state, int64_t now) {
     struct vector2d move = {0};
 
+    float factor = 1;
+    if (state->multiplier != 0) {
+        factor = ((float)state->multiplier) / ((float)config->base_multiplier);
+    }
+    if (state->divisor != 0) {
+        factor = ((float)config->base_multiplier) / ((float)state->divisor);
+    }
+
     move = (struct vector2d){
-        .x = update_movement_1d(config, &state->x, now),
-        .y = update_movement_1d(config, &state->y, now),
+        .x = update_movement_1d(config, &state->x, now) * factor,
+        .y = update_movement_1d(config, &state->y, now) * factor,
     };
 
     return move;
@@ -194,14 +205,16 @@ static void update_work_scheduling(const struct device *dev) {
     }
 }
 
-int behavior_input_two_axis_adjust_speed(const struct device *dev, int16_t dx, int16_t dy) {
+int behavior_input_two_axis_adjust_speed(const struct device *dev, int16_t dx, int16_t dy, int16_t multiplier, int16_t divisor) {
     struct behavior_input_two_axis_data *data = dev->data;
 
-    LOG_DBG("Adjusting: %d %d", dx, dy);
+    LOG_DBG("Adjusting: %d %d %d %d", dx, dy, multiplier, divisor);
     data->state.x.speed += dx;
     data->state.y.speed += dy;
+    data->state.multiplier += multiplier;
+    data->state.divisor += divisor;
 
-    LOG_DBG("After: %d %d", data->state.x.speed, data->state.y.speed);
+    LOG_DBG("After: %d %d %d %d", data->state.x.speed, data->state.y.speed, data->state.multiplier, data->state.divisor);
 
     update_work_scheduling(dev);
 
@@ -224,10 +237,13 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
 
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
+    uint8_t multiplier = MOVE_MULT_DECODE(binding->param1);
+    uint8_t divisor = MOVE_DIV_DECODE(binding->param1);
+
     int16_t x = MOVE_X_DECODE(binding->param1);
     int16_t y = MOVE_Y_DECODE(binding->param1);
 
-    behavior_input_two_axis_adjust_speed(behavior_dev, x, y);
+    behavior_input_two_axis_adjust_speed(behavior_dev, x, y, multiplier, divisor);
     return 0;
 }
 
@@ -237,10 +253,13 @@ static int on_keymap_binding_released(struct zmk_behavior_binding *binding,
 
     LOG_DBG("position %d keycode 0x%02X", event.position, binding->param1);
 
+    uint8_t multiplier = MOVE_MULT_DECODE(binding->param1);
+    uint8_t divisor = MOVE_DIV_DECODE(binding->param1);
+
     int16_t x = MOVE_X_DECODE(binding->param1);
     int16_t y = MOVE_Y_DECODE(binding->param1);
 
-    behavior_input_two_axis_adjust_speed(behavior_dev, -x, -y);
+    behavior_input_two_axis_adjust_speed(behavior_dev, -x, -y, -multiplier, -divisor);
     return 0;
 }
 
@@ -256,6 +275,7 @@ static const struct behavior_driver_api behavior_input_two_axis_driver_api = {
         .delay_ms = DT_INST_PROP_OR(n, delay_ms, 0),                                               \
         .time_to_max_speed_ms = DT_INST_PROP(n, time_to_max_speed_ms),                             \
         .acceleration_exponent = DT_INST_PROP_OR(n, acceleration_exponent, 1),                     \
+        .base_multiplier = DT_INST_PROP_OR(n, base_multiplier, 1)                                  \
     };                                                                                             \
     BEHAVIOR_DT_INST_DEFINE(                                                                       \
         n, behavior_input_two_axis_init, NULL, &behavior_input_two_axis_data_##n,                  \

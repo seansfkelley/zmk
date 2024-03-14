@@ -184,9 +184,6 @@ int zmk_keymap_trigger_callbacks(struct zmk_behavior_binding *binding,
                                  struct zmk_behavior_binding_event event, uint8_t source,
                                  bool pressed) {
 
-    LOG_DBG("layer: %d position: %d, binding name: %s", event.layer, event.position,
-            log_strdup(binding->behavior_dev));
-
     const struct device *behavior = zmk_behavior_get_binding(binding->behavior_dev);
 
     if (!behavior) {
