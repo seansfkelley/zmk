@@ -363,7 +363,8 @@ static int zmk_led_generate_status(void) {
 
     struct zmk_endpoint_instance active_endpoint = zmk_endpoints_selected();
 
-    if (DT_PROP(UNDERGLOW_INDICATORS, output_fallback) != -1 && !zmk_endpoints_preferred_transport_is_active())
+    if (DT_PROP(UNDERGLOW_INDICATORS, output_fallback) != -1 &&
+        !zmk_endpoints_preferred_transport_is_active())
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, output_fallback)] = red;
 
     int active_ble_profile_index = zmk_ble_active_profile_index();
